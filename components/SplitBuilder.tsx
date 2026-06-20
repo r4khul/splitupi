@@ -1,11 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
   ArrowLeft,
   Plus,
+  Minus,
+  X,
+  Divide,
+  Equal,
+  Delete,
   Trash2,
   Users,
   Wallet,
@@ -16,6 +21,8 @@ import {
   Zap,
   BadgeIndianRupee,
   Sparkles,
+  BookUser,
+  UserPlus,
 } from "lucide-react";
 import {
   equalShares,
@@ -25,6 +32,11 @@ import {
   type SplitConfig,
   type SplitMode,
 } from "@/lib/upi";
+import { evaluateExpression } from "@/lib/calc";
+import {
+  isContactPickerSupported,
+  pickContacts,
+} from "@/lib/contacts";
 import { ShareCard } from "./ShareCard";
 
 let idCounter = 0;
@@ -54,7 +66,18 @@ export function SplitBuilder() {
     emptyParticipant(),
   ]);
 
-  const totalNum = parseFloat(total) || 0;
+  const [contactsSupported, setContactsSupported] = useState(false);
+  const [contactsMsg, setContactsMsg] = useState<string>("");
+  const [importing, setImporting] = useState(false);
+  const amountRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setContactsSupported(isContactPickerSupported());
+  }, []);
+
+  // Live calculator: the amount field accepts math like "1200/4" or "500+250".
+  const calc = evaluateExpression(total);
+  const totalNum = calc.valid ? calc.value : 0;
 
   // Live computed shares for display + the final split.
   const computed = useMemo<Participant[]>(() => {
@@ -88,6 +111,57 @@ export function SplitBuilder() {
     setParticipants((prev) => [...prev, emptyParticipant()]);
   }
 
+  // ----- Calculator pad helpers -----
+  function appendToAmount(sym: string) {
+    setTotal((prev) => {
+      const last = prev.trim().slice(-1);
+      // Avoid stacking operators (e.g. "5++").
+      if ("+-*/".includes(sym) && "+-*/".includes(last)) {
+        return prev.trim().slice(0, -1) + sym;
+      }
+      return prev + sym;
+    });
+    amountRef.current?.focus();
+  }
+
+  function backspaceAmount() {
+    setTotal((prev) => prev.slice(0, -1));
+    amountRef.current?.focus();
+  }
+
+  function clearAmount() {
+    setTotal("");
+    amountRef.current?.focus();
+  }
+
+  // ----- Contacts import -----
+  async function importFromContacts() {
+    if (!contactsSupported) {
+      setContactsMsg(
+        "Contact import works in Chrome on Android over HTTPS. Add people manually below.",
+      );
+      return;
+    }
+    setImporting(true);
+    setContactsMsg("");
+    try {
+      const picked = await pickContacts();
+      if (picked.length === 0) return;
+      const imported: Participant[] = picked.map((c) => ({
+        id: newId(),
+        name: c.name,
+        phone: c.phone,
+        amount: 0,
+      }));
+      setParticipants((prev) => {
+        const kept = prev.filter((p) => p.name.trim() || p.phone.trim());
+        return [...kept, ...imported];
+      });
+    } finally {
+      setImporting(false);
+    }
+  }
+
   function removeParticipant(id: string) {
     setParticipants((prev) =>
       prev.length > 1 ? prev.filter((p) => p.id !== id) : prev,
@@ -112,26 +186,85 @@ export function SplitBuilder() {
             transition={{ duration: 0.25 }}
             className="card-glass rounded-[var(--radius-card)] p-5 sm:p-7"
           >
-            {/* Amount hero */}
-            <div className="flex items-start justify-between gap-4">
-              <label className="block flex-1">
-                <span className="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted">
+            {/* Amount hero — doubles as a live calculator */}
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted">
                   <Receipt className="h-3.5 w-3.5" /> Total amount
                 </span>
-                <div className="flex items-center gap-2">
-                  <span className="text-3xl font-light text-faint sm:text-4xl">
-                    ₹
+                {calc.isExpression && (
+                  <span
+                    className={`flex items-center gap-1 text-xs font-semibold tabular-nums ${
+                      calc.valid ? "text-brand-bright" : "text-amber-400"
+                    }`}
+                  >
+                    <Equal className="h-3 w-3" />
+                    {calc.valid ? formatINR(totalNum) : "…"}
                   </span>
-                  <input
-                    type="number"
-                    inputMode="decimal"
-                    value={total}
-                    onChange={(e) => setTotal(e.target.value)}
-                    placeholder="0"
-                    className="no-spinner w-full bg-transparent text-4xl font-bold tracking-tight text-ink outline-none placeholder:text-faint sm:text-5xl"
-                  />
-                </div>
-              </label>
+                )}
+              </div>
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-3xl font-light text-faint sm:text-4xl">
+                  ₹
+                </span>
+                <input
+                  ref={amountRef}
+                  type="text"
+                  inputMode="decimal"
+                  value={total}
+                  onChange={(e) =>
+                    setTotal(e.target.value.replace(/[^0-9+\-*/().\s]/g, ""))
+                  }
+                  placeholder="0"
+                  aria-label="Total amount — supports math like 1200/4"
+                  autoComplete="off"
+                  className="no-spinner w-full bg-transparent text-4xl font-bold tracking-tight text-ink outline-none placeholder:text-faint sm:text-5xl"
+                />
+              </div>
+
+              {/* Operator keypad — type math, or tap to build it */}
+              <div className="mt-3 flex items-center gap-1.5">
+                {(
+                  [
+                    { sym: "+", icon: Plus },
+                    { sym: "-", icon: Minus },
+                    { sym: "*", icon: X },
+                    { sym: "/", icon: Divide },
+                  ] as const
+                ).map((op) => (
+                  <button
+                    key={op.sym}
+                    type="button"
+                    onClick={() => appendToAmount(op.sym)}
+                    aria-label={`operator ${op.sym}`}
+                    className="grid h-9 flex-1 place-items-center rounded-lg border border-border bg-white/[0.03] text-ink-soft transition hover:border-brand/50 hover:bg-brand/10 hover:text-brand-bright active:scale-95"
+                  >
+                    <op.icon className="h-4 w-4" />
+                  </button>
+                ))}
+                <button
+                  type="button"
+                  onClick={backspaceAmount}
+                  aria-label="backspace"
+                  className="grid h-9 flex-1 place-items-center rounded-lg border border-border bg-white/[0.03] text-ink-soft transition hover:border-border-strong hover:bg-white/[0.06] active:scale-95"
+                >
+                  <Delete className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={clearAmount}
+                  aria-label="clear"
+                  className="grid h-9 flex-1 place-items-center rounded-lg border border-border bg-white/[0.03] text-[11px] font-bold text-muted transition hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-400 active:scale-95"
+                >
+                  AC
+                </button>
+              </div>
+              <p className="mt-2 text-[11px] text-faint">
+                Tip: type a calculation like{" "}
+                <span className="font-medium text-muted">1200 / 4</span> or{" "}
+                <span className="font-medium text-muted">500+250+100</span> — it
+                solves instantly.
+              </p>
             </div>
 
             <input
@@ -211,22 +344,54 @@ export function SplitBuilder() {
               {computed.map((p, i) => (
                 <div
                   key={p.id}
-                  className="group flex items-center gap-2 rounded-xl border border-border bg-white/[0.015] p-2 pl-3 transition hover:border-border-strong"
+                  className="group rounded-xl border border-border bg-white/[0.015] p-2.5 transition hover:border-border-strong"
                 >
-                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/[0.04] text-[11px] font-semibold text-muted">
-                    {i + 1}
-                  </span>
-                  <input
-                    type="text"
-                    value={participants[i].name}
-                    onChange={(e) =>
-                      updateParticipant(p.id, { name: e.target.value })
-                    }
-                    placeholder="Name"
-                    className="w-0 flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-faint"
-                  />
-                  <div className="flex items-center gap-1.5 rounded-lg bg-white/[0.03] px-2 py-1.5">
-                    <Phone className="h-3.5 w-3.5 text-muted" />
+                  {/* Row 1: index + name + amount + delete */}
+                  <div className="flex items-center gap-2">
+                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/[0.04] text-[11px] font-semibold text-muted">
+                      {i + 1}
+                    </span>
+                    <input
+                      type="text"
+                      value={participants[i].name}
+                      onChange={(e) =>
+                        updateParticipant(p.id, { name: e.target.value })
+                      }
+                      placeholder="Name"
+                      className="min-w-0 flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-faint"
+                    />
+                    {mode === "equal" ? (
+                      <span className="shrink-0 text-sm font-semibold tabular-nums text-ink">
+                        {formatINR(p.amount)}
+                      </span>
+                    ) : (
+                      <div className="flex w-24 shrink-0 items-center gap-1 rounded-lg bg-white/[0.03] px-2 py-1.5">
+                        <span className="text-xs text-faint">₹</span>
+                        <input
+                          type="number"
+                          inputMode="decimal"
+                          value={participants[i].amount || ""}
+                          onChange={(e) =>
+                            updateParticipant(p.id, {
+                              amount: parseFloat(e.target.value) || 0,
+                            })
+                          }
+                          placeholder="0"
+                          className="no-spinner w-full bg-transparent text-right text-sm font-semibold text-ink outline-none placeholder:text-faint"
+                        />
+                      </div>
+                    )}
+                    <button
+                      onClick={() => removeParticipant(p.id)}
+                      aria-label="Remove person"
+                      className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-faint transition hover:bg-red-500/10 hover:text-red-400 sm:opacity-0 sm:group-hover:opacity-100"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                  {/* Row 2: phone (full width) */}
+                  <div className="mt-2 flex items-center gap-1.5 rounded-lg bg-white/[0.03] px-2.5 py-2">
+                    <Phone className="h-3.5 w-3.5 shrink-0 text-muted" />
                     <input
                       type="tel"
                       inputMode="tel"
@@ -234,48 +399,42 @@ export function SplitBuilder() {
                       onChange={(e) =>
                         updateParticipant(p.id, { phone: e.target.value })
                       }
-                      placeholder="98765 43210"
-                      className="w-28 bg-transparent text-sm text-ink-soft outline-none placeholder:text-faint sm:w-32"
+                      placeholder="Phone number (98765 43210)"
+                      className="min-w-0 flex-1 bg-transparent text-sm text-ink-soft outline-none placeholder:text-faint"
                     />
                   </div>
-                  {mode === "equal" ? (
-                    <span className="w-20 shrink-0 text-right text-sm font-semibold tabular-nums text-ink">
-                      {formatINR(p.amount)}
-                    </span>
-                  ) : (
-                    <div className="flex w-24 shrink-0 items-center gap-1 rounded-lg bg-white/[0.03] px-2 py-1.5">
-                      <span className="text-xs text-faint">₹</span>
-                      <input
-                        type="number"
-                        inputMode="decimal"
-                        value={participants[i].amount || ""}
-                        onChange={(e) =>
-                          updateParticipant(p.id, {
-                            amount: parseFloat(e.target.value) || 0,
-                          })
-                        }
-                        placeholder="0"
-                        className="no-spinner w-full bg-transparent text-right text-sm font-semibold text-ink outline-none placeholder:text-faint"
-                      />
-                    </div>
-                  )}
-                  <button
-                    onClick={() => removeParticipant(p.id)}
-                    aria-label="Remove person"
-                    className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-faint opacity-0 transition hover:bg-red-500/10 hover:text-red-400 group-hover:opacity-100"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </button>
                 </div>
               ))}
             </div>
 
-            <button
-              onClick={addParticipant}
-              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border-strong py-2.5 text-sm font-medium text-muted transition hover:border-brand/50 hover:text-brand-bright"
-            >
-              <Plus className="h-4 w-4" /> Add person
-            </button>
+            {/* Add people: from contacts or manually */}
+            <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              <button
+                onClick={importFromContacts}
+                disabled={importing}
+                className="flex items-center justify-center gap-2 rounded-xl border border-brand/40 bg-brand/10 py-2.5 text-sm font-semibold text-brand-bright transition hover:bg-brand/15 disabled:opacity-60"
+              >
+                <BookUser className="h-4 w-4" />
+                {importing ? "Opening contacts…" : "Add from contacts"}
+              </button>
+              <button
+                onClick={addParticipant}
+                className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-border-strong py-2.5 text-sm font-medium text-muted transition hover:border-brand/50 hover:text-brand-bright"
+              >
+                <UserPlus className="h-4 w-4" /> Add manually
+              </button>
+            </div>
+            {contactsMsg && (
+              <p className="mt-2 text-center text-xs text-amber-400/90">
+                {contactsMsg}
+              </p>
+            )}
+            {!contactsMsg && !contactsSupported && (
+              <p className="mt-2 text-center text-[11px] text-faint">
+                Contact import opens your phone&apos;s address book on Chrome for
+                Android (HTTPS).
+              </p>
+            )}
 
             {/* Custom split balance hint */}
             {mode === "custom" && totalNum > 0 && (
