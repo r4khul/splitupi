@@ -1,26 +1,29 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #060607;
-  --color-bg-soft: #0b0b0d;
-  --color-surface: #101013;
-  --color-surface-2: #16161a;
-  --color-border: rgba(255, 255, 255, 0.07);
-  --color-border-strong: rgba(255, 255, 255, 0.12);
+  /* Flat, near-black surfaces — minimal elevation, hairline structure. */
+  --color-bg: #08080a;
+  --color-bg-soft: #0c0c0f;
+  --color-surface: #0e0e12;
+  --color-surface-2: #141419;
+  --color-border: rgba(255, 255, 255, 0.06);
+  --color-border-strong: rgba(255, 255, 255, 0.11);
 
-  --color-ink: #f4f4f6;
-  --color-ink-soft: #b6b7bd;
-  --color-muted: #76777f;
-  --color-faint: #4a4b52;
+  --color-ink: #f3f3f5;
+  --color-ink-soft: #aeb0b8;
+  --color-muted: #74757d;
+  --color-faint: #45464d;
 
   --color-brand: #336df7;
-  --color-brand-bright: #5b8bff;
+  --color-brand-bright: #6f97ff;
   --color-brand-deep: #1f4fd0;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
-  --font-script: var(--font-caveat), cursive;
+  --font-serif: var(--font-fraunces), "Georgia", serif;
+  --font-mono: var(--font-jb-mono), ui-monospace, "SF Mono", monospace;
 
-  --radius-card: 24px;
+  --radius-card: 14px;
+  --radius-field: 9px;
 }
 
 :root {
@@ -40,55 +43,83 @@ body {
   letter-spacing: -0.011em;
 }
 
-/* Ambient background glow */
+/*
+  Instrument Sans — brand/hero display font.
+  Use for the hero headline, logo wordmark, and key CTAs.
+  Bold + tight tracking is the signature treatment.
+*/
+.font-instrument {
+  font-family: var(--font-instrument), "Helvetica Neue", sans-serif;
+  letter-spacing: -0.03em;
+}
+
+/*
+  Display serif: Fraunces variable with optical-size axis.
+  Use font-variation-settings via inline style or the .display-* size utilities
+  for correct opsz at each size tier.
+*/
+.font-display {
+  font-family: var(--font-serif);
+  letter-spacing: -0.02em;
+  font-variation-settings: "opsz" 40;
+}
+.font-display-xl {
+  font-family: var(--font-serif);
+  letter-spacing: -0.025em;
+  font-variation-settings: "opsz" 72;
+}
+
+/* Uppercase, letter-spaced technical label. */
+.label-mono {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+/* Very restrained ambient: a single faint top wash, no AI rainbow glow. */
 .bg-aurora {
   background:
-    radial-gradient(60rem 40rem at 50% -10%, rgba(51, 109, 247, 0.18), transparent 60%),
-    radial-gradient(40rem 30rem at 100% 10%, rgba(91, 139, 255, 0.08), transparent 55%),
-    radial-gradient(45rem 35rem at 0% 30%, rgba(31, 79, 208, 0.07), transparent 60%);
+    radial-gradient(48rem 30rem at 50% -16%, rgba(51, 109, 247, 0.1), transparent 62%);
 }
 
+/* Fine hairline grid, masked to fade out. */
 .grid-overlay {
   background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
-  background-size: 46px 46px;
-  mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 30%, transparent 75%);
+    linear-gradient(to right, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 20%, transparent 80%);
 }
 
-/* Glass card */
+/* Flat hairline card — no glass, no heavy shadow. */
 .card-glass {
-  background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012)),
-    var(--color-surface);
+  background: var(--color-surface);
   border: 1px solid var(--color-border);
-  box-shadow:
-    0 1px 0 0 rgba(255, 255, 255, 0.05) inset,
-    0 30px 80px -40px rgba(0, 0, 0, 0.9);
+  box-shadow: 0 24px 70px -50px rgba(0, 0, 0, 0.9);
 }
 
 .brand-glow {
-  box-shadow:
-    0 0 0 1px rgba(51, 109, 247, 0.35),
-    0 10px 40px -12px rgba(51, 109, 247, 0.6);
+  box-shadow: 0 8px 28px -12px rgba(51, 109, 247, 0.55);
 }
 
 /* Inputs */
 .field {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.02);
   border: 1px solid var(--color-border);
-  transition: border-color 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+  transition: border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
 }
 .field:focus-within,
 .field:focus {
-  border-color: rgba(51, 109, 247, 0.55);
-  background: rgba(51, 109, 247, 0.06);
-  box-shadow: 0 0 0 4px rgba(51, 109, 247, 0.12);
+  border-color: rgba(51, 109, 247, 0.5);
+  background: rgba(51, 109, 247, 0.05);
+  box-shadow: 0 0 0 3px rgba(51, 109, 247, 0.1);
 }
 
 .pill {
   border: 1px solid var(--color-border);
-  background: rgba(255, 255, 255, 0.025);
+  background: rgba(255, 255, 255, 0.02);
 }
 
 /* Custom scrollbar */

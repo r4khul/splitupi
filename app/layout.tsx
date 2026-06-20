@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Caveat } from "next/font/google";
+import { Inter, Fraunces, JetBrains_Mono, Instrument_Sans } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -8,10 +8,27 @@ const inter = Inter({
   display: "swap",
 });
 
-const caveat = Caveat({
+// Editorial display serif with strong light/bold weight contrast.
+const fraunces = Fraunces({
   subsets: ["latin"],
-  weight: ["600", "700"],
-  variable: "--font-caveat",
+  axes: ["opsz"],
+  variable: "--font-fraunces",
+  display: "swap",
+});
+
+// Clean modern humanist sans — the hero/brand display font.
+const instrumentSans = Instrument_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-instrument",
+  display: "swap",
+});
+
+// Technical monospace for labels, chrome and microcopy.
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-jb-mono",
   display: "swap",
 });
 
@@ -40,7 +57,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} ${caveat.variable}`}>
+    <html
+      lang="en"
+      className={`${inter.variable} ${fraunces.variable} ${instrumentSans.variable} ${jetbrainsMono.variable} antialiased`}
+    >
       <body>{children}</body>
     </html>
   );

@@ -189,12 +189,12 @@ export function SplitBuilder() {
             {/* Amount hero — doubles as a live calculator */}
             <div>
               <div className="flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted">
+                <span className="label-mono flex items-center gap-1.5">
                   <Receipt className="h-3.5 w-3.5" /> Total amount
                 </span>
                 {calc.isExpression && (
                   <span
-                    className={`flex items-center gap-1 text-xs font-semibold tabular-nums ${
+                    className={`flex items-center gap-1 font-mono text-xs font-semibold tabular-nums ${
                       calc.valid ? "text-brand-bright" : "text-amber-400"
                     }`}
                   >
@@ -203,8 +203,8 @@ export function SplitBuilder() {
                   </span>
                 )}
               </div>
-              <div className="mt-2 flex items-center gap-2">
-                <span className="text-3xl font-light text-faint sm:text-4xl">
+              <div className="mt-3 flex items-baseline gap-2">
+                <span className="font-display-xl text-5xl font-light text-faint sm:text-6xl">
                   ₹
                 </span>
                 <input
@@ -218,7 +218,7 @@ export function SplitBuilder() {
                   placeholder="0"
                   aria-label="Total amount — supports math like 1200/4"
                   autoComplete="off"
-                  className="no-spinner w-full bg-transparent text-4xl font-bold tracking-tight text-ink outline-none placeholder:text-faint sm:text-5xl"
+                  className="font-display-xl no-spinner w-full bg-transparent text-5xl font-semibold tracking-tight text-ink outline-none placeholder:text-faint sm:text-6xl"
                 />
               </div>
 
@@ -237,7 +237,7 @@ export function SplitBuilder() {
                     type="button"
                     onClick={() => appendToAmount(op.sym)}
                     aria-label={`operator ${op.sym}`}
-                    className="grid h-9 flex-1 place-items-center rounded-lg border border-border bg-white/[0.03] text-ink-soft transition hover:border-brand/50 hover:bg-brand/10 hover:text-brand-bright active:scale-95"
+                    className="grid h-9 flex-1 place-items-center rounded-[8px] border border-border bg-white/[0.02] text-ink-soft transition hover:border-brand/50 hover:bg-brand/10 hover:text-brand-bright active:scale-95"
                   >
                     <op.icon className="h-4 w-4" />
                   </button>
@@ -246,7 +246,7 @@ export function SplitBuilder() {
                   type="button"
                   onClick={backspaceAmount}
                   aria-label="backspace"
-                  className="grid h-9 flex-1 place-items-center rounded-lg border border-border bg-white/[0.03] text-ink-soft transition hover:border-border-strong hover:bg-white/[0.06] active:scale-95"
+                  className="grid h-9 flex-1 place-items-center rounded-[8px] border border-border bg-white/[0.02] text-ink-soft transition hover:border-border-strong hover:bg-white/[0.06] active:scale-95"
                 >
                   <Delete className="h-4 w-4" />
                 </button>
@@ -254,16 +254,16 @@ export function SplitBuilder() {
                   type="button"
                   onClick={clearAmount}
                   aria-label="clear"
-                  className="grid h-9 flex-1 place-items-center rounded-lg border border-border bg-white/[0.03] text-[11px] font-bold text-muted transition hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-400 active:scale-95"
+                  className="grid h-9 flex-1 place-items-center rounded-[8px] border border-border bg-white/[0.02] font-mono text-[11px] font-bold text-muted transition hover:border-red-500/40 hover:bg-red-500/10 hover:text-red-400 active:scale-95"
                 >
                   AC
                 </button>
               </div>
-              <p className="mt-2 text-[11px] text-faint">
-                Tip: type a calculation like{" "}
-                <span className="font-medium text-muted">1200 / 4</span> or{" "}
-                <span className="font-medium text-muted">500+250+100</span> — it
-                solves instantly.
+              <p className="mt-2.5 font-mono text-[10.5px] leading-relaxed text-faint">
+                tip: type a calculation like{" "}
+                <span className="text-muted">1200/4</span> or{" "}
+                <span className="text-muted">500+250+100</span> — it solves
+                instantly.
               </p>
             </div>
 
@@ -277,7 +277,7 @@ export function SplitBuilder() {
 
             {/* Payee details */}
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <label className="field flex items-center gap-2.5 rounded-xl px-3.5 py-3">
+              <label className="field flex items-center gap-2.5 rounded-[9px] px-3.5 py-3">
                 <AtSign className="h-4 w-4 shrink-0 text-muted" />
                 <input
                   type="text"
@@ -291,7 +291,7 @@ export function SplitBuilder() {
                 />
                 {payeeVpa.length > 2 && (
                   <span
-                    className={`text-[10px] font-semibold ${
+                    className={`font-mono text-[10px] font-semibold uppercase tracking-wider ${
                       vpaValid ? "text-emerald-400" : "text-amber-400"
                     }`}
                   >
@@ -299,7 +299,7 @@ export function SplitBuilder() {
                   </span>
                 )}
               </label>
-              <label className="field flex items-center gap-2.5 rounded-xl px-3.5 py-3">
+              <label className="field flex items-center gap-2.5 rounded-[9px] px-3.5 py-3">
                 <Wallet className="h-4 w-4 shrink-0 text-muted" />
                 <input
                   type="text"
@@ -313,23 +313,23 @@ export function SplitBuilder() {
 
             {/* Split mode toggle */}
             <div className="mt-6 flex items-center justify-between">
-              <span className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted">
+              <span className="label-mono flex items-center gap-1.5">
                 <Users className="h-3.5 w-3.5" /> Split with{" "}
                 <span className="text-ink-soft">{participants.length}</span>
               </span>
-              <div className="flex rounded-lg border border-border bg-white/[0.02] p-0.5 text-xs font-medium">
+              <div className="flex rounded-[8px] border border-border bg-white/[0.02] p-0.5 font-mono text-[11px] font-medium">
                 {(["equal", "custom"] as SplitMode[]).map((m) => (
                   <button
                     key={m}
                     onClick={() => setMode(m)}
-                    className={`relative rounded-md px-3 py-1.5 capitalize transition ${
+                    className={`relative rounded-[6px] px-3 py-1.5 lowercase transition ${
                       mode === m ? "text-white" : "text-muted hover:text-ink-soft"
                     }`}
                   >
                     {mode === m && (
                       <motion.span
                         layoutId="mode-pill"
-                        className="absolute inset-0 rounded-md bg-brand"
+                        className="absolute inset-0 rounded-[6px] bg-brand"
                         transition={{ type: "spring", stiffness: 400, damping: 32 }}
                       />
                     )}
@@ -344,11 +344,11 @@ export function SplitBuilder() {
               {computed.map((p, i) => (
                 <div
                   key={p.id}
-                  className="group rounded-xl border border-border bg-white/[0.015] p-2.5 transition hover:border-border-strong"
+                  className="group rounded-[10px] border border-border bg-white/[0.012] p-2.5 transition hover:border-border-strong"
                 >
                   {/* Row 1: index + name + amount + delete */}
                   <div className="flex items-center gap-2">
-                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-white/[0.04] text-[11px] font-semibold text-muted">
+                    <span className="grid h-7 w-7 shrink-0 place-items-center rounded-[7px] bg-white/[0.04] font-mono text-[11px] font-semibold text-muted">
                       {i + 1}
                     </span>
                     <input
@@ -361,11 +361,11 @@ export function SplitBuilder() {
                       className="min-w-0 flex-1 bg-transparent text-sm text-ink outline-none placeholder:text-faint"
                     />
                     {mode === "equal" ? (
-                      <span className="shrink-0 text-sm font-semibold tabular-nums text-ink">
+                      <span className="shrink-0 font-mono text-[13px] font-semibold tabular-nums text-ink">
                         {formatINR(p.amount)}
                       </span>
                     ) : (
-                      <div className="flex w-24 shrink-0 items-center gap-1 rounded-lg bg-white/[0.03] px-2 py-1.5">
+                      <div className="flex w-24 shrink-0 items-center gap-1 rounded-[7px] bg-white/[0.03] px-2 py-1.5">
                         <span className="text-xs text-faint">₹</span>
                         <input
                           type="number"
@@ -384,13 +384,13 @@ export function SplitBuilder() {
                     <button
                       onClick={() => removeParticipant(p.id)}
                       aria-label="Remove person"
-                      className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-faint transition hover:bg-red-500/10 hover:text-red-400 sm:opacity-0 sm:group-hover:opacity-100"
+                      className="grid h-8 w-8 shrink-0 place-items-center rounded-[7px] text-faint transition hover:bg-red-500/10 hover:text-red-400 sm:opacity-0 sm:group-hover:opacity-100"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
                   </div>
                   {/* Row 2: phone (full width) */}
-                  <div className="mt-2 flex items-center gap-1.5 rounded-lg bg-white/[0.03] px-2.5 py-2">
+                  <div className="mt-2 flex items-center gap-1.5 rounded-[7px] bg-white/[0.03] px-2.5 py-2">
                     <Phone className="h-3.5 w-3.5 shrink-0 text-muted" />
                     <input
                       type="tel"
@@ -412,26 +412,26 @@ export function SplitBuilder() {
               <button
                 onClick={importFromContacts}
                 disabled={importing}
-                className="flex items-center justify-center gap-2 rounded-xl border border-brand/40 bg-brand/10 py-2.5 text-sm font-semibold text-brand-bright transition hover:bg-brand/15 disabled:opacity-60"
+                className="flex items-center justify-center gap-2 rounded-[9px] border border-brand/40 bg-brand/10 py-2.5 font-mono text-[13px] font-semibold text-brand-bright transition hover:bg-brand/15 disabled:opacity-60"
               >
                 <BookUser className="h-4 w-4" />
-                {importing ? "Opening contacts…" : "Add from contacts"}
+                {importing ? "opening contacts…" : "Add from contacts"}
               </button>
               <button
                 onClick={addParticipant}
-                className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-border-strong py-2.5 text-sm font-medium text-muted transition hover:border-brand/50 hover:text-brand-bright"
+                className="flex items-center justify-center gap-2 rounded-[9px] border border-dashed border-border-strong py-2.5 font-mono text-[13px] font-medium text-muted transition hover:border-brand/50 hover:text-brand-bright"
               >
                 <UserPlus className="h-4 w-4" /> Add manually
               </button>
             </div>
             {contactsMsg && (
-              <p className="mt-2 text-center text-xs text-amber-400/90">
+              <p className="mt-2 text-center font-mono text-[11px] text-amber-400/90">
                 {contactsMsg}
               </p>
             )}
             {!contactsMsg && !contactsSupported && (
-              <p className="mt-2 text-center text-[11px] text-faint">
-                Contact import opens your phone&apos;s address book on Chrome for
+              <p className="mt-2 text-center font-mono text-[11px] text-faint">
+                contact import opens your phone&apos;s address book on Chrome for
                 Android (HTTPS).
               </p>
             )}
@@ -439,7 +439,7 @@ export function SplitBuilder() {
             {/* Custom split balance hint */}
             {mode === "custom" && totalNum > 0 && (
               <p
-                className={`mt-3 text-center text-xs ${
+                className={`mt-3 text-center font-mono text-[11px] ${
                   customBalanced ? "text-emerald-400" : "text-amber-400"
                 }`}
               >
@@ -452,11 +452,11 @@ export function SplitBuilder() {
             )}
 
             {/* Feature pills */}
-            <div className="mt-6 flex flex-wrap gap-2">
+            <div className="mt-6 flex flex-wrap gap-1.5">
               {FEATURES.map((f) => (
                 <span
                   key={f.label}
-                  className="pill inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs text-ink-soft"
+                  className="pill inline-flex items-center gap-1.5 rounded-[7px] px-2.5 py-1.5 font-mono text-[11px] text-ink-soft"
                 >
                   <f.icon className="h-3.5 w-3.5 text-brand-bright" />
                   {f.label}
@@ -468,17 +468,17 @@ export function SplitBuilder() {
             <button
               onClick={() => canProceed && setStep("share")}
               disabled={!canProceed}
-              className={`mt-6 flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3.5 text-sm font-semibold transition ${
+              className={`mt-6 flex w-full items-center justify-center gap-2 rounded-[10px] px-4 py-3.5 font-mono text-[13px] font-semibold transition ${
                 canProceed
                   ? "bg-brand text-white brand-glow hover:bg-brand-bright"
                   : "cursor-not-allowed bg-white/[0.04] text-faint"
               }`}
             >
-              Create split & get pay links
+              Create split &amp; get pay links
               <ArrowRight className="h-4 w-4" />
             </button>
             {!canProceed && (
-              <p className="mt-2.5 text-center text-xs text-faint">
+              <p className="mt-2.5 text-center font-mono text-[11px] text-faint">
                 {totalNum <= 0
                   ? "Enter the total amount to begin."
                   : !vpaValid
@@ -502,32 +502,32 @@ export function SplitBuilder() {
               <div className="flex items-center justify-between">
                 <button
                   onClick={() => setStep("build")}
-                  className="inline-flex items-center gap-1.5 text-sm text-muted transition hover:text-ink"
+                  className="inline-flex items-center gap-1.5 font-mono text-[13px] text-muted transition hover:text-ink"
                 >
-                  <ArrowLeft className="h-4 w-4" /> Edit
+                  <ArrowLeft className="h-4 w-4" /> edit
                 </button>
-                <span className="pill rounded-full px-3 py-1 text-xs text-ink-soft">
+                <span className="pill rounded-[7px] px-2.5 py-1 font-mono text-[11px] text-ink-soft">
                   {participants.length} requests ready
                 </span>
               </div>
               <div className="mt-4 flex items-end justify-between gap-4">
                 <div>
-                  <p className="text-xs uppercase tracking-wider text-muted">
+                  <p className="label-mono truncate">
                     {note.trim() || "Split total"}
                   </p>
-                  <p className="text-3xl font-bold tracking-tight text-ink">
+                  <p className="font-display-xl mt-1 text-4xl font-semibold tracking-tight text-ink">
                     {formatINR(totalNum)}
                   </p>
                 </div>
-                <div className="text-right text-xs text-muted">
+                <div className="text-right font-mono text-[11px] text-muted">
                   <p>to</p>
                   <p className="font-medium text-brand-bright">{payeeVpa}</p>
                 </div>
               </div>
-              <p className="mt-4 text-sm leading-relaxed text-muted">
+              <p className="mt-4 font-mono text-[12px] leading-relaxed text-muted">
                 Tap{" "}
-                <span className="font-medium text-ink-soft">Send SMS</span> or{" "}
-                <span className="font-medium text-ink-soft">WhatsApp</span> on
+                <span className="font-semibold text-ink-soft">Send SMS</span> or{" "}
+                <span className="font-semibold text-ink-soft">WhatsApp</span> on
                 each card to fire off a prefilled payment request. The link opens
                 their UPI app with your details and the exact amount.
               </p>

@@ -67,11 +67,14 @@ export function buildMessage(
   upiLink: string,
 ): string {
   const who = config.payeeName.trim() || "Someone";
-  const reason = config.note.trim() ? ` for "${config.note.trim()}"` : "";
-  const name = participant.name.trim() ? `Hi ${participant.name.trim()}, ` : "";
+  const reason = config.note.trim() ? ` for ${config.note.trim()}` : "";
+  const greeting = participant.name.trim() ? `Hi ${participant.name.trim()},\n` : "";
+  const amount = formatINR(participant.amount);
   return (
-    `${name}${who} requested ${formatINR(participant.amount)}${reason} via splitupi.\n\n` +
-    `Tap to pay instantly with any UPI app:\n${upiLink}`
+    `Payment Request\n\n` +
+    `${greeting}${who} is requesting ${amount}${reason}.\n\n` +
+    `Pay Now\n${upiLink}\n\n` +
+    `— splitupi`
   );
 }
 
