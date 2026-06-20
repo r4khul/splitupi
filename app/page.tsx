@@ -1,6 +1,6 @@
 import { Github, ArrowDownRight } from "lucide-react";
 import { Logo } from "@/components/Logo";
-import { SplitBuilder } from "@/components/SplitBuilder";
+import { SplitBuilderClient } from "@/components/SplitBuilderClient";
 
 export default function Home() {
   return (
@@ -59,7 +59,7 @@ export default function Home() {
 
         {/* Builder */}
         <section className="pb-6">
-          <SplitBuilder />
+          <SplitBuilderClient />
         </section>
 
         {/* How it works */}
