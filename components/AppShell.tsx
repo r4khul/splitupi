@@ -37,7 +37,6 @@ export function AppShell() {
             exit={{ opacity: 0, y: 56 }}
             transition={{ duration: 0.38, ease: EASE_OUT }}
             className="absolute inset-0 overflow-y-auto"
-            style={{ scrollbarGutter: "stable" }}
           >
             <BuilderView onBack={() => setView("landing")} />
           </motion.div>
