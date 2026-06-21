@@ -33,7 +33,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://splitupi.com"),
+  metadataBase: new URL("https://splitupi.rakhul.me"),
   title: "splitupi - split bills, paid in seconds",
   description:
     "Create a split, add a few numbers, and everyone gets a one-tap UPI payment link over SMS or WhatsApp. No app, no signup.",
