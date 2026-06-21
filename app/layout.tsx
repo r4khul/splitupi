@@ -33,10 +33,10 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 const SITE_URL = "https://splitupi.rakhul.me";
-const SITE_NAME = "Split UPI";
-const TITLE = "Split UPI — Split Bills & Get Paid via UPI Instantly";
+const SITE_NAME = "splitUPI";
+const TITLE = "splitUPI - Split Bills & Get Paid via UPI Instantly";
 const DESCRIPTION =
-  "The fastest way to split bills in India. Enter the total, add phone numbers — everyone gets a one-tap UPI payment link over SMS or WhatsApp. No app, no signup, no friction.";
+  "The fastest way to split bills in India. Enter the total, add phone numbers - everyone gets a one-tap UPI payment link over SMS or WhatsApp. No app, no signup, no friction.";
 const OG_IMAGE = `${SITE_URL}/og`;
 
 export const metadata: Metadata = {
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
     "NPCI UPI deep link",
     "no app split bill",
     "expense splitting India",
-    "split UPI",
+    "splitUPI",
     "splitupi",
   ],
   authors: [{ name: "r4khul", url: "https://github.com/r4khul" }],
@@ -95,7 +95,7 @@ export const metadata: Metadata = {
         url: OG_IMAGE,
         width: 1200,
         height: 630,
-        alt: "Split UPI — Split bills and get paid via UPI instantly. No app needed.",
+        alt: "splitUPI - Split bills and get paid via UPI instantly. No app needed.",
         type: "image/png",
       },
     ],
@@ -109,7 +109,7 @@ export const metadata: Metadata = {
     images: [
       {
         url: OG_IMAGE,
-        alt: "Split UPI — Split bills and get paid via UPI instantly.",
+        alt: "splitUPI - Split bills and get paid via UPI instantly.",
       },
     ],
   },
@@ -185,34 +185,34 @@ const jsonLd = {
       mainEntity: [
         {
           "@type": "Question",
-          name: "How do I split a bill using Split UPI?",
+          name: "How do I split a bill using splitUPI?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Enter the total amount, add the phone numbers of people who owe you, and Split UPI generates individual UPI payment links for each person. Share via SMS or WhatsApp in one tap.",
+            text: "Enter the total amount, add the phone numbers of people who owe you, and splitUPI generates individual UPI payment links for each person. Share via SMS or WhatsApp in one tap.",
           },
         },
         {
           "@type": "Question",
-          name: "Does Split UPI require an app or signup?",
+          name: "Does splitUPI require an app or signup?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "No app or signup is required. Split UPI works entirely in your browser and generates standard UPI deep links that open any UPI app — Google Pay, PhonePe, Paytm, BHIM, etc.",
+            text: "No app or signup is required. splitUPI works entirely in your browser and generates standard UPI deep links that open any UPI app - Google Pay, PhonePe, Paytm, BHIM, etc.",
           },
         },
         {
           "@type": "Question",
-          name: "Which UPI apps work with Split UPI?",
+          name: "Which UPI apps work with splitUPI?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Split UPI generates standard NPCI UPI deep links. They work with all UPI-enabled apps including Google Pay, PhonePe, Paytm, BHIM, Amazon Pay, and any bank's UPI app.",
+            text: "splitUPI generates standard NPCI UPI deep links. They work with all UPI-enabled apps including Google Pay, PhonePe, Paytm, BHIM, Amazon Pay, and any bank's UPI app.",
           },
         },
         {
           "@type": "Question",
-          name: "Is Split UPI free to use?",
+          name: "Is splitUPI free to use?",
           acceptedAnswer: {
             "@type": "Answer",
-            text: "Yes, Split UPI is completely free and open source. It stores nothing and runs on your bank's UPI rails.",
+            text: "Yes, splitUPI is completely free and open source. It stores nothing and runs on your bank's UPI rails.",
           },
         },
       ],

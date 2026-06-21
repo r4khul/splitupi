@@ -79,10 +79,10 @@ export function ShareCard({ config, participant, index }: ShareCardProps) {
    * shareToWhatsApp
    * Strategy:
    *   1. Generate the branded poster image (JPEG blob).
-   *   2. On mobile — use navigator.share({ files }) so the native
+   *   2. On mobile - use navigator.share({ files }) so the native
    *      share sheet pops up. User taps WhatsApp → image + caption
    *      land in the chat. This is the ONLY way to send a file to WA.
-   *   3. On desktop / API unavailable — download the image AND open
+   *   3. On desktop / API unavailable - download the image AND open
    *      the wa.me direct-chat link (user can attach the saved image
    *      manually). This is the best possible desktop fallback.
    * ───────────────────────────────────────────────────────────────── */
@@ -113,7 +113,7 @@ export function ShareCard({ config, participant, index }: ShareCardProps) {
         navigator.canShare({ files: [file] });
 
       if (canShareFile) {
-        /* Mobile path — native share sheet, user picks WhatsApp */
+        /* Mobile path - native share sheet, user picks WhatsApp */
         await navigator.share({ files: [file], text: message });
       } else {
         /* Desktop / non-supporting browser:
@@ -129,7 +129,7 @@ export function ShareCard({ config, participant, index }: ShareCardProps) {
         setTimeout(() => window.open(waLink, "_blank"), 400);
       }
     } catch {
-      /* User cancelled share — silently fall through */
+      /* User cancelled share - silently fall through */
     } finally {
       setSharing(false);
     }
@@ -273,7 +273,7 @@ export function ShareCard({ config, participant, index }: ShareCardProps) {
       {/* ── Icon-only action row ─────────────────────────────────── */}
       <div className="mt-3.5 flex items-center gap-1.5">
 
-        {/* SMS — native SMS deeplink to that phone number */}
+        {/* SMS - native SMS deeplink to that phone number */}
         <IconBtn
           label="Send SMS"
           href={smsLink}
@@ -284,7 +284,7 @@ export function ShareCard({ config, participant, index }: ShareCardProps) {
           <SmsIcon className="h-4 w-4" />
         </IconBtn>
 
-        {/* WhatsApp — generates poster → native share sheet → user picks WA */}
+        {/* WhatsApp - generates poster → native share sheet → user picks WA */}
         <IconBtn
           label={sharing ? "Generating…" : "WhatsApp (with image)"}
           onClick={shareToWhatsApp}

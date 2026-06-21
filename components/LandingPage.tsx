@@ -66,7 +66,7 @@ export function LandingPage({ onEnter }: { onEnter: () => void }) {
           </a>
 
           {/*
-            Instrument Serif headline — pure color contrast.
+            Instrument Serif headline - pure color contrast.
             Key words: bright white. Filler: very dark gray (#45464d = color-faint).
             Tracking (-0.01em from .font-instrument) + leading 0.88.
           */}
@@ -82,7 +82,7 @@ export function LandingPage({ onEnter }: { onEnter: () => void }) {
 
           {/* Sub-copy */}
           <p className="mt-6 max-w-[340px] font-mono text-[12px] leading-[1.75] text-muted">
-            Enter the total, add phone numbers — each person
+            Enter the total, add phone numbers - each person
             gets a one-tap UPI link over SMS or WhatsApp.
           </p>
 
@@ -108,7 +108,7 @@ export function LandingPage({ onEnter }: { onEnter: () => void }) {
         </div>
       </div>
 
-      {/* ── Feature strip — centered dashed border ── */}
+      {/* ── Feature strip - centered dashed border ── */}
       <div className="shrink-0 border-t border-dashed border-white/[0.06]">
         <div className="flex flex-col divide-y divide-dashed divide-white/[0.06] px-6 sm:grid sm:grid-cols-3 sm:divide-x sm:divide-y-0 sm:px-10">
           {FEATURES.map((f) => (

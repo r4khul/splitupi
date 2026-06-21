@@ -9,15 +9,15 @@ export interface PosterParams {
 }
 
 /* ─────────────────────────────────────────────────────────────────
-   Canvas layout (logical pixels — rendered at 3× for crispness)
-   Portrait: 540 × 800 — WhatsApp-share friendly
+   Canvas layout (logical pixels - rendered at 3× for crispness)
+   Portrait: 540 × 800 - WhatsApp-share friendly
    ───────────────────────────────────────────────────────────────── */
 const W   = 540;
 const H   = 820;
 const DPR = 3;   // device-pixel-ratio multiplier
 
 /* ── Design tokens ───────────────────────────────────────────── */
-const BRAND       = "#336df7"; // Split UPI blue — full background
+const BRAND       = "#336df7"; // splitUPI blue - full background
 const BRAND_LIGHT = "#4d84ff"; // slightly lighter for subtle gradients
 const WHITE       = "#ffffff";
 const WHITE_90    = "rgba(255,255,255,0.90)";
@@ -266,7 +266,7 @@ export async function generatePaymentPoster(params: PosterParams): Promise<Blob>
   ctx.textAlign = "center";
   ctx.fillText(`Pay ${amountFormatted} to`, W / 2, DETAILS_TOP);
 
-  // Recipient name — large bold
+  // Recipient name - large bold
   const nameFontSz = fitText(
     ctx,
     displayName,

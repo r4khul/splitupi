@@ -74,7 +74,7 @@ export function buildMessage(
     `Payment Request\n\n` +
     `${greeting}${who} is requesting ${amount}${reason}.\n\n` +
     `Pay Now\n${upiLink}\n\n` +
-    `— splitupi`
+    `- splitupi`
   );
 }
 
@@ -86,7 +86,7 @@ export function normalizePhone(raw: string): string {
   return digits;
 }
 
-/** sms: link with prefilled body — opens the native Messages app. */
+/** sms: link with prefilled body - opens the native Messages app. */
 export function buildSmsLink(phone: string, message: string): string {
   const normalized = normalizePhone(phone);
   const to = normalized ? `+${normalized}` : "";

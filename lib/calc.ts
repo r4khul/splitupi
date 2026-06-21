@@ -131,7 +131,7 @@ export function evaluateExpression(input: string): CalcResult {
   if (!expr) return { value: 0, valid: true, isExpression: false };
   if (!/^[0-9+\-*/().\s]+$/.test(expr))
     return { value: NaN, valid: false, isExpression };
-  // Don't error mid-typing when it ends on an operator — just treat as pending.
+  // Don't error mid-typing when it ends on an operator - just treat as pending.
   if (/[+\-*/.]\s*$/.test(expr)) {
     try {
       const trimmed = expr.replace(/[+\-*/.]\s*$/, "");
