@@ -8,7 +8,6 @@ import {
   buildMessage,
   buildSmsLink,
   buildUpiLink,
-  buildWhatsAppLink,
   formatINR,
   isValidPhone,
   normalizePhone,
@@ -73,6 +72,66 @@ export function ShareCard({ config, participant, index }: ShareCardProps) {
       setTimeout(() => setCopied(false), 1600);
     } catch {
       /* clipboard blocked */
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────────────
+   * shareToWhatsApp
+   * Strategy:
+   *   1. Generate the branded poster image (JPEG blob).
+   *   2. On mobile — use navigator.share({ files }) so the native
+   *      share sheet pops up. User taps WhatsApp → image + caption
+   *      land in the chat. This is the ONLY way to send a file to WA.
+   *   3. On desktop / API unavailable — download the image AND open
+   *      the wa.me direct-chat link (user can attach the saved image
+   *      manually). This is the best possible desktop fallback.
+   * ───────────────────────────────────────────────────────────────── */
+  async function shareToWhatsApp() {
+    if (!phoneValid) return;
+    setSharing(true);
+    setSent(true);
+    const phone = normalizePhone(participant.phone);
+    const waLink = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+    try {
+      const blob = await generatePaymentPoster({
+        upiLink,
+        amountFormatted: formatINR(participant.amount),
+        name: config.payeeName.trim(),
+        note: config.note.trim(),
+        payeeVpa: config.payeeVpa.trim(),
+      });
+
+      const file = new File(
+        [blob],
+        `splitupi-${config.payeeName.trim() || "payment"}.jpg`,
+        { type: "image/jpeg" },
+      );
+
+      const canShareFile =
+        typeof navigator.share === "function" &&
+        typeof navigator.canShare === "function" &&
+        navigator.canShare({ files: [file] });
+
+      if (canShareFile) {
+        /* Mobile path — native share sheet, user picks WhatsApp */
+        await navigator.share({ files: [file], text: message });
+      } else {
+        /* Desktop / non-supporting browser:
+           Download the image so the user has it,
+           then open their WA direct chat so they can attach it. */
+        const objectUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = objectUrl;
+        a.download = file.name;
+        a.click();
+        URL.revokeObjectURL(objectUrl);
+        /* Small delay so the download starts before navigation */
+        setTimeout(() => window.open(waLink, "_blank"), 400);
+      }
+    } catch {
+      /* User cancelled share — silently fall through */
+    } finally {
+      setSharing(false);
     }
   }
 
@@ -225,15 +284,21 @@ export function ShareCard({ config, participant, index }: ShareCardProps) {
           <SmsIcon className="h-4 w-4" />
         </IconBtn>
 
-        {/* WhatsApp — direct deeplink to THAT person's WA chat */}
+        {/* WhatsApp — generates poster → native share sheet → user picks WA */}
         <IconBtn
-          label="WhatsApp"
-          href={phoneValid ? waDirectLink : undefined}
-          onClick={() => { if (phoneValid) setSent(true); }}
-          disabled={!phoneValid}
+          label={sharing ? "Generating…" : "WhatsApp (with image)"}
+          onClick={shareToWhatsApp}
+          disabled={sharing || !phoneValid}
           color="bg-[#25d366]"
         >
-          <WaIcon className="h-4 w-4" />
+          {sharing ? (
+            <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth={3}/>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
+            </svg>
+          ) : (
+            <WaIcon className="h-4 w-4" />
+          )}
         </IconBtn>
 
         {/* Generic share (poster image) */}
