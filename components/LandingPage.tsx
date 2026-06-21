@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowRight, Github, Star, Smartphone, Zap, Shield } from "lucide-react";
+import { ArrowRight, Github, Star, Smartphone, Zap, Shield, ReceiptIndianRupee } from "lucide-react";
 import { Logo } from "./Logo";
 import { preloadSplitBuilder } from "./SplitBuilderClient";
 
@@ -35,7 +35,7 @@ export function LandingPage({ onEnter }: { onEnter: () => void }) {
             onClick={onEnter}
             className="inline-flex items-center gap-1.5 rounded-[8px] border border-border bg-white/[0.02] px-3.5 py-1.5 font-mono text-[11px] text-ink-soft transition hover:border-border-strong hover:text-ink"
           >
-            Split now <ArrowRight className="h-3 w-3" />
+            Split now <ReceiptIndianRupee className="h-3 w-3" />
           </button>
         </header>
 
@@ -70,7 +70,7 @@ export function LandingPage({ onEnter }: { onEnter: () => void }) {
             Key words: bright white. Filler: very dark gray (#45464d = color-faint).
             Tracking (-0.01em from .font-instrument) + leading 0.88.
           */}
-          <h1 className="font-instrument font-medium leading-[0.88] text-[clamp(2.8rem,8vw,5.5rem)]">
+          <h1 className="font-instrument font-bold leading-[0.88] text-[clamp(2.8rem,8vw,5.5rem)]">
             <span style={{ color: "var(--color-faint)" }}>Split&nbsp;the&nbsp;</span>
             <span className="text-ink">bill</span>
             <span style={{ color: "var(--color-faint)" }}>,</span>

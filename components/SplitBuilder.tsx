@@ -473,7 +473,7 @@ export function SplitBuilder() {
             transition={{ duration: 0.25 }}
             className="space-y-4"
           >
-            <div className="card-glass rounded-[var(--radius-card)] p-5 sm:p-6">
+            <div className="card-glass rounded-[var(--radius-card)] px-4 py-5 sm:p-6">
               <div className="flex items-center justify-between">
                 <button
                   onClick={() => setStep("build")}

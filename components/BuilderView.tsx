@@ -17,7 +17,7 @@ export function BuilderView({ onBack }: { onBack: () => void }) {
             WebkitBackdropFilter: "blur(16px)",
           }}
         >
-          <div className="flex items-center justify-between px-6 py-3.5 sm:px-10">
+          <div className="flex items-center justify-between px-4 py-3.5 sm:px-10">
           <button
             onClick={onBack}
             className="inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-[0.12em] text-muted transition hover:text-ink"
@@ -35,13 +35,13 @@ export function BuilderView({ onBack }: { onBack: () => void }) {
       </header>
 
       {/* ── Builder content ───────────────────────────────── */}
-      <div className="w-full flex-1 px-6 py-8 sm:px-10">
+      <div className="w-full flex-1 px-4 py-6 sm:px-10 sm:py-8">
         <SplitBuilderClient />
       </div>
 
       {/* ── Minimal footer ────────────────────────────────── */}
       <footer className="border-t border-dashed border-white/[0.06]">
-        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 px-6 py-3.5 sm:justify-between sm:px-10">
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 px-4 py-3.5 sm:justify-between sm:px-10">
           <p className="font-mono text-[10.5px] text-faint">Runs on your bank&apos;s UPI rails. Stores nothing.</p>
           <a
             href="https://github.com/r4khul"
