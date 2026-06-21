@@ -98,16 +98,31 @@ export default function OgImage({ title, description, logoDataUri }: OgImageProp
           </div>
         </div>
 
-        {/* Footer / Domain or details (Vertically centered within the 140px footer height) */}
+        {/* Footer: CTA + domain */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 140 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: '#336df7' }} />
             <span style={{ color: '#74757d', fontSize: 20, fontFamily: '"Inter", sans-serif' }}>
-              https://splitupi.rakhul.me
+              splitupi.rakhul.me
             </span>
           </div>
-          <div style={{ display: 'flex', color: '#74757d', fontSize: 20, fontFamily: '"Inter", sans-serif' }}>
-            Paid in seconds.
+          {/* CTA pill */}
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              backgroundColor: '#336df7',
+              borderRadius: 12,
+              paddingTop: 14,
+              paddingBottom: 14,
+              paddingLeft: 28,
+              paddingRight: 28,
+            }}
+          >
+            <span style={{ color: '#ffffff', fontSize: 22, fontFamily: '"Inter", sans-serif', fontWeight: 500 }}>
+              Split a bill now →
+            </span>
           </div>
         </div>
 
