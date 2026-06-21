@@ -23,11 +23,18 @@ import {
   Sparkles,
   BookUser,
   UserPlus,
+  Send,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import {
+  buildMessage,
+  buildUpiLink,
   equalShares,
   formatINR,
   isValidVpa,
+  isValidPhone,
+  normalizePhone,
   type Participant,
   type SplitConfig,
   type SplitMode,
@@ -49,6 +56,10 @@ function emptyParticipant(): Participant {
 
 export function SplitBuilder() {
   const [step, setStep] = useState<"build" | "share">("build");
+  const [bulkWaOpen, setBulkWaOpen] = useState(false);
+  const [bulkSelected, setBulkSelected] = useState<Set<string>>(new Set());
+  const [bulkSending, setBulkSending] = useState(false);
+  const [bulkSentCount, setBulkSentCount] = useState(0);
 
   const [total, setTotal] = useState<string>("");
   const [note, setNote] = useState<string>("");
@@ -199,6 +210,48 @@ export function SplitBuilder() {
     payeeName,
     note,
   };
+
+  /* ── Bulk WhatsApp ─────────────────────────────────────────────── */
+  const eligibleParticipants = computed.filter((p) => isValidPhone(p.phone));
+
+  function toggleBulkParticipant(id: string) {
+    setBulkSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function selectAllBulk() {
+    setBulkSelected(new Set(eligibleParticipants.map((p) => p.id)));
+  }
+
+  function clearBulk() {
+    setBulkSelected(new Set());
+  }
+
+  async function sendBulkWhatsApp() {
+    const targets = eligibleParticipants.filter((p) => bulkSelected.has(p.id));
+    if (!targets.length) return;
+    setBulkSending(true);
+    setBulkSentCount(0);
+    for (let i = 0; i < targets.length; i++) {
+      const p = targets[i];
+      const upiLink = buildUpiLink(config, p.amount);
+      const msg = buildMessage(config, p, upiLink);
+      const phone = normalizePhone(p.phone);
+      const url = `https://wa.me/${phone}?text=${encodeURIComponent(msg)}`;
+      window.open(url, "_blank");
+      setBulkSentCount(i + 1);
+      // Give the browser a tick between popups to avoid blockers
+      if (i < targets.length - 1) {
+        await new Promise((r) => setTimeout(r, 600));
+      }
+    }
+    setBulkSending(false);
+    setBulkWaOpen(false);
+  }
 
   return (
     <div className="w-full">
@@ -582,6 +635,104 @@ export function SplitBuilder() {
                 their UPI app with your details and the exact amount.
               </p>
             </div>
+
+            {/* ── Bulk WhatsApp panel ─────────────────────────────── */}
+            {eligibleParticipants.length > 1 && (
+              <div className="card-glass rounded-[12px] overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => { setBulkWaOpen((v) => !v); if (!bulkWaOpen) selectAllBulk(); }}
+                  className="flex w-full items-center justify-between px-4 py-3.5 text-left transition hover:bg-white/[0.02]"
+                >
+                  <span className="flex items-center gap-2 font-mono text-[12px] font-semibold text-ink-soft">
+                    <svg className="h-4 w-4 text-[#25d366] fill-current" viewBox="0 0 24 24">
+                      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" />
+                    </svg>
+                    Send all via WhatsApp
+                    <span className="rounded-[5px] bg-[#25d366]/15 px-1.5 py-0.5 text-[10px] text-[#25d366]">
+                      {eligibleParticipants.length} people
+                    </span>
+                  </span>
+                  {bulkWaOpen ? <ChevronUp className="h-3.5 w-3.5 text-muted" /> : <ChevronDown className="h-3.5 w-3.5 text-muted" />}
+                </button>
+
+                <AnimatePresence>
+                  {bulkWaOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.22 }}
+                      className="overflow-hidden"
+                    >
+                      <div className="border-t border-border px-4 pb-4 pt-3">
+                        {/* Select all / clear */}
+                        <div className="mb-3 flex items-center justify-between">
+                          <span className="font-mono text-[10px] text-muted">Select people to send</span>
+                          <div className="flex gap-2">
+                            <button type="button" onClick={selectAllBulk} className="font-mono text-[10px] text-brand-bright hover:underline">all</button>
+                            <span className="text-faint">·</span>
+                            <button type="button" onClick={clearBulk} className="font-mono text-[10px] text-muted hover:text-ink-soft">none</button>
+                          </div>
+                        </div>
+
+                        {/* Participant checkboxes */}
+                        <div className="space-y-2">
+                          {eligibleParticipants.map((p) => {
+                            const checked = bulkSelected.has(p.id);
+                            return (
+                              <button
+                                key={p.id}
+                                type="button"
+                                onClick={() => toggleBulkParticipant(p.id)}
+                                className={`flex w-full items-center gap-3 rounded-[9px] border px-3 py-2.5 text-left transition ${
+                                  checked
+                                    ? "border-[#25d366]/40 bg-[#25d366]/08"
+                                    : "border-border bg-white/[0.02] hover:border-border-strong"
+                                }`}
+                              >
+                                <span
+                                  className={`grid h-4 w-4 shrink-0 place-items-center rounded-[4px] border transition ${
+                                    checked ? "border-[#25d366] bg-[#25d366]" : "border-border-strong bg-transparent"
+                                  }`}
+                                >
+                                  {checked && (
+                                    <svg className="h-2.5 w-2.5 text-white" viewBox="0 0 12 12" fill="none">
+                                      <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                  )}
+                                </span>
+                                <span className="min-w-0 flex-1">
+                                  <span className="block truncate text-sm font-medium text-ink">{p.name.trim() || `Person`}</span>
+                                  <span className="block font-mono text-[10px] text-muted">{p.phone}</span>
+                                </span>
+                                <span className="shrink-0 font-mono text-[12px] font-semibold text-ink">{formatINR(p.amount)}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Send button */}
+                        <button
+                          type="button"
+                          onClick={sendBulkWhatsApp}
+                          disabled={bulkSending || bulkSelected.size === 0}
+                          className="mt-3 flex w-full items-center justify-center gap-2 rounded-[9px] bg-[#25d366] py-2.5 font-mono text-[12px] font-semibold text-white transition hover:bg-[#20bd5a] active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
+                        >
+                          <Send className="h-3.5 w-3.5" />
+                          {bulkSending
+                            ? `Opening chat ${bulkSentCount} of ${bulkSelected.size}…`
+                            : `Open ${bulkSelected.size} WhatsApp chat${bulkSelected.size !== 1 ? "s" : ""}`}
+                        </button>
+                        <p className="mt-2 text-center font-mono text-[9px] text-faint">
+                          Opens each person&apos;s WA chat directly · allow pop-ups if prompted
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
 
             <div className="space-y-3">
               {computed.map((p, i) => (
