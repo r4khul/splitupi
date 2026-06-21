@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowRight,
@@ -57,35 +57,67 @@ export function SplitBuilder() {
   const [mode, setMode] = useState<SplitMode>("equal");
   const [participants, setParticipants] = useState<Participant[]>([
     emptyParticipant(),
-    emptyParticipant(),
   ]);
+  const [myShare, setMyShare] = useState<number>(0);
 
   const [contactsSupported, setContactsSupported] = useState(false);
   const [contactsMsg, setContactsMsg] = useState<string>("");
   const [importing, setImporting] = useState(false);
+  const [savedVpa, setSavedVpa] = useState<string>("");
+  const [savedName, setSavedName] = useState<string>("");
   const amountRef = useRef<HTMLInputElement>(null);
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     setContactsSupported(isContactPickerSupported());
+    const v = localStorage.getItem("splitupi:vpa") ?? "";
+    const n = localStorage.getItem("splitupi:name") ?? "";
+    setSavedVpa(v);
+    setSavedName(n);
+    if (v) setPayeeVpa(v);
+    if (n) setPayeeName(n);
   }, []);
+
+  const persistPayee = useCallback((vpa: string, name: string) => {
+    if (saveTimer.current) clearTimeout(saveTimer.current);
+    saveTimer.current = setTimeout(() => {
+      if (isValidVpa(vpa)) {
+        localStorage.setItem("splitupi:vpa", vpa);
+        setSavedVpa(vpa);
+      }
+      if (name.trim()) {
+        localStorage.setItem("splitupi:name", name.trim());
+        setSavedName(name.trim());
+      }
+    }, 800);
+  }, []);
+
+  const showRecallChip =
+    savedVpa && savedName && (!payeeVpa.trim() && !payeeName.trim());
 
   // Live calculator: the amount field accepts math like "1200/4" or "500+250".
   const calc = evaluateExpression(total);
   const totalNum = calc.valid ? calc.value : 0;
 
-  // Live computed shares for display + the final split.
-  const computed = useMemo<Participant[]>(() => {
-    if (mode === "equal") {
-      const shares = equalShares(totalNum, participants.length);
-      return participants.map((p, i) => ({ ...p, amount: shares[i] ?? 0 }));
-    }
-    return participants;
-  }, [mode, totalNum, participants]);
+  // Total headcount = payee (you) + participants.
+  const totalPeople = participants.length + 1;
 
-  const customSum = participants.reduce(
-    (s, p) => s + (mode === "custom" ? p.amount : 0),
-    0,
-  );
+  // Live computed shares for display + the final split.
+  // equalShares includes the payee slot; myShareComputed is index 0.
+  const { myShareComputed, computed } = useMemo(() => {
+    if (mode === "equal") {
+      const shares = equalShares(totalNum, totalPeople);
+      const myShareComputed = shares[0] ?? 0;
+      const computed = participants.map((p, i) => ({ ...p, amount: shares[i + 1] ?? 0 }));
+      return { myShareComputed, computed };
+    }
+    return { myShareComputed: myShare, computed: participants };
+  }, [mode, totalNum, totalPeople, participants, myShare]);
+
+  const customSum =
+    mode === "custom"
+      ? myShare + participants.reduce((s, p) => s + p.amount, 0)
+      : 0;
 
   const vpaValid = isValidVpa(payeeVpa);
   const hasNames = participants.some((p) => p.phone.trim());
@@ -180,7 +212,7 @@ export function SplitBuilder() {
             transition={{ duration: 0.25 }}
             className="card-glass rounded-[var(--radius-card)] p-5 sm:p-7"
           >
-            {/* Amount hero — doubles as a live calculator */}
+            {/* Amount hero - doubles as a live calculator */}
             <div>
               <div className="flex items-center justify-between">
                 <span className="label-mono flex items-center gap-1.5">
@@ -210,13 +242,13 @@ export function SplitBuilder() {
                     setTotal(e.target.value.replace(/[^0-9+\-*/().\s]/g, ""))
                   }
                   placeholder="0"
-                  aria-label="Total amount — supports math like 1200/4"
+                  aria-label="Total amount - supports math like 1200/4"
                   autoComplete="off"
                   className="font-display-xl no-spinner w-full bg-transparent text-5xl font-semibold tracking-tight text-ink outline-none placeholder:text-faint sm:text-6xl"
                 />
               </div>
 
-              {/* Operator keypad — type math, or tap to build it */}
+              {/* Operator keypad - type math, or tap to build it */}
               <div className="mt-3 flex items-center gap-1.5">
                 {(
                   [
@@ -264,52 +296,66 @@ export function SplitBuilder() {
             />
 
             {/* Payee details */}
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              <label className="field flex items-center gap-2.5 rounded-[9px] px-3.5 py-3">
-                <AtSign className="h-4 w-4 shrink-0 text-muted" />
-                <input
-                  type="text"
-                  value={payeeVpa}
-                  onChange={(e) => setPayeeVpa(e.target.value)}
-                  placeholder="your-upi@bank"
-                  autoCapitalize="off"
-                  autoCorrect="off"
-                  spellCheck={false}
-                  className="w-full bg-transparent text-sm text-ink outline-none placeholder:text-faint"
-                />
-                {payeeVpa.length > 2 && (
-                  <span
-                    className={`font-mono text-[10px] font-semibold uppercase tracking-wider ${
-                      vpaValid ? "text-emerald-400" : "text-amber-400"
-                    }`}
-                  >
-                    {vpaValid ? "valid" : "check"}
-                  </span>
-                )}
-              </label>
-              <label className="field flex items-center gap-2.5 rounded-[9px] px-3.5 py-3">
-                <Wallet className="h-4 w-4 shrink-0 text-muted" />
-                <input
-                  type="text"
-                  value={payeeName}
-                  onChange={(e) => setPayeeName(e.target.value)}
-                  placeholder="Your name (payee)"
-                  className="w-full bg-transparent text-sm text-ink outline-none placeholder:text-faint"
-                />
-              </label>
+            <div className="mt-6">
+              {showRecallChip && (
+                <button
+                  type="button"
+                  onClick={() => { setPayeeVpa(savedVpa); setPayeeName(savedName); }}
+                  className="mb-2 inline-flex items-center gap-1.5 rounded-[6px] border border-border bg-white/[0.02] px-2.5 py-1 font-mono text-[10.5px] text-ink-soft transition hover:border-border-strong hover:text-ink"
+                >
+                  <span className="text-faint">use saved:</span>
+                  <span className="text-ink">{savedName}</span>
+                  <span className="text-faint">·</span>
+                  <span className="text-muted">{savedVpa}</span>
+                </button>
+              )}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="field flex items-center gap-2.5 rounded-[9px] px-3.5 py-3">
+                  <AtSign className="h-4 w-4 shrink-0 text-muted" />
+                  <input
+                    type="text"
+                    value={payeeVpa}
+                    onChange={(e) => { setPayeeVpa(e.target.value); persistPayee(e.target.value, payeeName); }}
+                    placeholder="your-upi@bank"
+                    autoCapitalize="off"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    className="w-full bg-transparent text-sm text-ink outline-none placeholder:text-faint"
+                  />
+                  {payeeVpa.length > 2 && (
+                    <span
+                      className={`font-mono text-[10px] font-semibold uppercase tracking-wider ${
+                        vpaValid ? "text-emerald-400" : "text-amber-400"
+                      }`}
+                    >
+                      {vpaValid ? "valid" : "check"}
+                    </span>
+                  )}
+                </label>
+                <label className="field flex items-center gap-2.5 rounded-[9px] px-3.5 py-3">
+                  <Wallet className="h-4 w-4 shrink-0 text-muted" />
+                  <input
+                    type="text"
+                    value={payeeName}
+                    onChange={(e) => { setPayeeName(e.target.value); persistPayee(payeeVpa, e.target.value); }}
+                    placeholder="Your name (payee)"
+                    className="w-full bg-transparent text-sm text-ink outline-none placeholder:text-faint"
+                  />
+                </label>
+              </div>
             </div>
 
             {/* Split mode toggle */}
             <div className="mt-6 flex items-center justify-between">
               <span className="label-mono flex items-center gap-1.5">
                 <Users className="h-3.5 w-3.5" /> Split with{" "}
-                <span className="text-ink-soft">{participants.length}</span>
+                <span className="text-ink-soft">{totalPeople}</span>
               </span>
               <div className="flex rounded-[8px] border border-border bg-white/[0.02] p-0.5 font-mono text-[11px] font-medium">
                 {(["equal", "custom"] as SplitMode[]).map((m) => (
                   <button
                     key={m}
-                    onClick={() => setMode(m)}
+                    onClick={() => { setMode(m); if (m === "equal") setMyShare(0); }}
                     className={`relative rounded-[6px] px-3 py-1.5 lowercase transition ${
                       mode === m ? "text-white" : "text-muted hover:text-ink-soft"
                     }`}
@@ -329,6 +375,35 @@ export function SplitBuilder() {
 
             {/* Participants */}
             <div className="mt-3 space-y-2">
+              {/* Your share row */}
+              <div className="rounded-[10px] border border-border bg-white/[0.035] p-2.5">
+                <div className="flex items-center gap-2">
+                  <span className="min-w-0 flex-1 text-sm text-ink">
+                    {payeeName.trim() || "Your share"}
+                  </span>
+                  {mode === "equal" ? (
+                    <span className="shrink-0 font-mono text-[13px] font-semibold tabular-nums text-ink">
+                      {formatINR(myShareComputed)}
+                    </span>
+                  ) : (
+                    <div className="flex w-24 shrink-0 items-center gap-1 rounded-[7px] bg-white/[0.03] px-2 py-1.5">
+                      <span className="text-xs text-faint">&#8377;</span>
+                      <input
+                        type="number"
+                        inputMode="decimal"
+                        value={myShare || ""}
+                        onChange={(e) => setMyShare(parseFloat(e.target.value) || 0)}
+                        placeholder="0"
+                        className="no-spinner w-full bg-transparent text-right text-sm font-semibold text-ink outline-none placeholder:text-faint"
+                      />
+                    </div>
+                  )}
+                </div>
+                <p className="mt-1 font-mono text-[10px] text-faint">
+                  your cut - not charged to others
+                </p>
+              </div>
+
               {computed.map((p, i) => (
                 <div
                   key={p.id}
@@ -400,14 +475,14 @@ export function SplitBuilder() {
               <button
                 onClick={importFromContacts}
                 disabled={importing}
-                className="flex items-center justify-center gap-2 rounded-[9px] border border-brand/40 bg-brand/10 py-2.5 font-mono text-[13px] font-semibold text-brand-bright transition hover:bg-brand/15 disabled:opacity-60"
+                className="flex items-center justify-center gap-2 rounded-[9px] border border-dashed border-border-strong py-2.5 font-mono text-[13px] font-medium text-muted transition hover:border-border-strong hover:text-ink-soft disabled:opacity-40"
               >
                 <BookUser className="h-4 w-4" />
-                {importing ? "opening contacts…" : "Add from contacts"}
+                {importing ? "opening contacts..." : "Add from contacts"}
               </button>
               <button
                 onClick={addParticipant}
-                className="flex items-center justify-center gap-2 rounded-[9px] border border-dashed border-border-strong py-2.5 font-mono text-[13px] font-medium text-muted transition hover:border-brand/50 hover:text-brand-bright"
+                className="flex items-center justify-center gap-2 rounded-[9px] border border-dashed border-border-strong py-2.5 font-mono text-[13px] font-medium text-muted transition hover:border-border-strong hover:text-ink-soft"
               >
                 <UserPlus className="h-4 w-4" /> Add manually
               </button>
@@ -433,7 +508,7 @@ export function SplitBuilder() {
               >
                 {customBalanced
                   ? "Splits add up perfectly."
-                  : `${formatINR(customSum)} of ${formatINR(totalNum)} assigned — ${formatINR(
+                  : `${formatINR(customSum)} of ${formatINR(totalNum)} assigned - ${formatINR(
                       totalNum - customSum,
                     )} left.`}
               </p>
@@ -443,9 +518,9 @@ export function SplitBuilder() {
             <button
               onClick={() => canProceed && setStep("share")}
               disabled={!canProceed}
-              className={`mt-6 flex w-full items-center justify-center gap-2 rounded-[10px] px-4 py-3.5 font-mono text-[13px] font-semibold transition ${
+              className={`font-instrument mt-6 flex w-full items-center justify-center gap-2 rounded-[10px] px-4 py-3.5 text-[15px] font-semibold transition ${
                 canProceed
-                  ? "bg-brand text-white brand-glow hover:bg-brand-bright"
+                  ? "bg-brand text-white hover:bg-brand-bright"
                   : "cursor-not-allowed bg-white/[0.04] text-faint"
               }`}
             >
@@ -482,7 +557,7 @@ export function SplitBuilder() {
                   <ArrowLeft className="h-4 w-4" /> edit
                 </button>
                 <span className="pill rounded-[7px] px-2.5 py-1 font-mono text-[11px] text-ink-soft">
-                  {participants.length} requests ready
+                  {computed.filter((p) => p.phone.trim()).length} requests ready
                 </span>
               </div>
               <div className="mt-4 flex items-end justify-between gap-4">
