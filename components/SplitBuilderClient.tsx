@@ -12,6 +12,10 @@ const SplitBuilderDynamic = dynamic(
   },
 );
 
+export function preloadSplitBuilder() {
+  void import("./SplitBuilder");
+}
+
 export function SplitBuilderClient() {
   return <SplitBuilderDynamic />;
 }

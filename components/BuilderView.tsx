@@ -41,11 +41,25 @@ export function BuilderView({ onBack }: { onBack: () => void }) {
 
       {/* ── Minimal footer ────────────────────────────────── */}
       <footer className="border-t border-dashed border-white/[0.06]">
-        <div className="px-6 py-6 sm:px-10">
-          <p className="font-mono text-[11px] text-faint flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-            <span>Runs on your bank&apos;s UPI rails.</span>
-            <span>splitupi stores nothing.</span>
-          </p>
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 px-6 py-3.5 sm:justify-between sm:px-10">
+          <p className="font-mono text-[10.5px] text-faint">Runs on your bank&apos;s UPI rails. Stores nothing.</p>
+          <a
+            href="https://github.com/r4khul"
+            target="_blank"
+            rel="noreferrer"
+            className="group inline-flex items-center gap-1.5 transition"
+          >
+            <img
+              src="https://github.com/r4khul.png?size=32"
+              alt="r4khul"
+              width={20}
+              height={20}
+              className="h-5 w-5 rounded-full opacity-50 transition group-hover:opacity-90"
+            />
+            <span className="font-mono text-[10.5px] text-faint transition group-hover:text-ink-soft">
+              built by{" "}<span className="text-muted group-hover:text-ink-soft">@r4khul</span>
+            </span>
+          </a>
         </div>
       </footer>
     </div>
