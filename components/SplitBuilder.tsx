@@ -630,8 +630,7 @@ export function SplitBuilder() {
               <p className="mt-4 font-mono text-[12px] leading-relaxed text-muted">
                 Tap{" "}
                 <span className="font-semibold text-ink-soft">Send SMS</span> or{" "}
-                <span className="font-semibold text-ink-soft">WhatsApp</span> on
-                each card to fire off a prefilled payment request. The link opens
+                <span className="font-semibold text-ink-soft">WhatsApp</span> The link opens
                 their UPI app with your details and the exact amount.
               </p>
             </div>
