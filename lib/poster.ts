@@ -8,24 +8,24 @@ export interface PosterParams {
   payeeVpa: string;
 }
 
+/* ── Canvas dimensions (portrait, WhatsApp-friendly) ─── */
 const W = 540;
 const H = 760;
 
-const BRAND = "#336df7";
-const BG = "#09090b";
-const SURFACE = "#111115";
-const INK = "#f3f3f5";
+/* ── Design tokens — mirror globals.css exactly ───────── */
+const BG      = "#08080a";
+const SURFACE = "#0e0e12";
+const BRAND   = "#336df7";
+const INK     = "#f3f3f5";
 const INK_SOFT = "#aeb0b8";
-const MUTED = "#74757d";
-const FAINT = "#45464d";
-const BORDER = "rgba(255,255,255,0.07)";
+const MUTED   = "#74757d";
+const FAINT   = "#45464d";
 
+/* ── Helpers ─────────────────────────────────────────── */
 function roundRect(
   ctx: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
+  x: number, y: number,
+  w: number, h: number,
   r: number,
 ) {
   ctx.beginPath();
@@ -41,91 +41,57 @@ function roundRect(
   ctx.closePath();
 }
 
-function line(ctx: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number) {
-  ctx.beginPath();
-  ctx.moveTo(x1, y1);
-  ctx.lineTo(x2, y2);
-  ctx.stroke();
-}
-
-function fitText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number, basePx: number, minPx = 28) {
+function fitText(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number,
+  basePx: number,
+  fontSpec: (sz: number) => string,
+  minPx = 24,
+) {
   let size = basePx;
-  ctx.font = `700 ${size}px system-ui, -apple-system, sans-serif`;
+  ctx.font = fontSpec(size);
   while (ctx.measureText(text).width > maxWidth && size > minPx) {
     size -= 2;
-    ctx.font = `700 ${size}px system-ui, -apple-system, sans-serif`;
+    ctx.font = fontSpec(size);
   }
   return size;
 }
 
 export async function generatePaymentPoster(params: PosterParams): Promise<Blob> {
-  const { upiLink, amountFormatted, name, note, payeeVpa } = params;
+  const { upiLink, amountFormatted, name, note } = params;
 
   const canvas = document.createElement("canvas");
   canvas.width = W;
   canvas.height = H;
   const ctx = canvas.getContext("2d")!;
 
-  /* ── Background ─────────────────────────────────────── */
+  /* ── Background ──────────────────────────────────────── */
   ctx.fillStyle = BG;
   ctx.fillRect(0, 0, W, H);
 
-  /* ── Top brand bar ───────────────────────────────────── */
-  ctx.fillStyle = BRAND;
-  ctx.fillRect(0, 0, W, 3);
+  /* ── Subtle brand aurora glow at top ─────────────────── */
+  const aurora = ctx.createRadialGradient(W / 2, -20, 0, W / 2, -20, 340);
+  aurora.addColorStop(0, "rgba(51,109,247,0.13)");
+  aurora.addColorStop(1, "rgba(51,109,247,0)");
+  ctx.fillStyle = aurora;
+  ctx.fillRect(0, 0, W, 220);
 
-  /* ── Brand wordmark row ──────────────────────────────── */
-  const PAD = 44;
-  ctx.fillStyle = BRAND;
-  ctx.font = `700 16px system-ui, sans-serif`;
-  ctx.textAlign = "left";
-  ctx.fillText("split", PAD, 56);
-  const splitW = ctx.measureText("split").width;
-  ctx.fillStyle = INK_SOFT;
-  ctx.fillText("upi", PAD + splitW, 56);
+  /* ── Top accent line ─────────────────────────────────── */
+  const topLine = ctx.createLinearGradient(0, 0, W, 0);
+  topLine.addColorStop(0, "rgba(51,109,247,0)");
+  topLine.addColorStop(0.5, BRAND);
+  topLine.addColorStop(1, "rgba(51,109,247,0)");
+  ctx.fillStyle = topLine;
+  ctx.fillRect(0, 0, W, 2);
 
-  ctx.fillStyle = FAINT;
-  ctx.font = `400 11px "Courier New", monospace`;
-  ctx.textAlign = "right";
-  ctx.fillText("PAYMENT REQUEST", W - PAD, 56);
+  /* ── QR code (dominant — fills most of the card) ──────── */
+  const QR_SIZE = 380;
+  const QR_PAD  = 18;
+  const BOX     = QR_SIZE + QR_PAD * 2;
 
-  /* ── Hairline divider ────────────────────────────────── */
-  ctx.strokeStyle = BORDER;
-  ctx.lineWidth = 1;
-  line(ctx, PAD, 72, W - PAD, 72);
-
-  /* ── Recipient name ──────────────────────────────────── */
-  const displayName = name.trim() || "Payment";
-  ctx.fillStyle = INK_SOFT;
-  ctx.font = `500 15px system-ui, sans-serif`;
-  ctx.textAlign = "center";
-  ctx.fillText(displayName.toUpperCase(), W / 2, 116);
-
-  /* ── Amount — auto-sized to fit ──────────────────────── */
-  const amtSize = fitText(ctx, amountFormatted, W - PAD * 2, 72, 36);
-  ctx.fillStyle = INK;
-  ctx.font = `700 ${amtSize}px system-ui, sans-serif`;
-  ctx.textAlign = "center";
-  ctx.fillText(amountFormatted, W / 2, 116 + amtSize + 4);
-
-  /* ── Note ────────────────────────────────────────────── */
-  if (note.trim()) {
-    ctx.fillStyle = MUTED;
-    ctx.font = `400 13px system-ui, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.fillText(`for ${note.trim()}`, W / 2, 116 + amtSize + 32);
-  }
-
-  /* ── Hairline divider ────────────────────────────────── */
-  const divY = 116 + amtSize + 56;
-  ctx.strokeStyle = BORDER;
-  ctx.lineWidth = 1;
-  line(ctx, PAD, divY, W - PAD, divY);
-
-  /* ── QR code ─────────────────────────────────────────── */
-  const QR_SIZE = 216;
   const qrDataUrl = await QRCode.toDataURL(upiLink, {
-    width: QR_SIZE,
+    width: QR_SIZE * 2,
     margin: 1,
     color: { dark: "#000000", light: "#ffffff" },
     errorCorrectionLevel: "M",
@@ -138,45 +104,101 @@ export async function generatePaymentPoster(params: PosterParams): Promise<Blob>
     img.src = qrDataUrl;
   });
 
-  const QR_PAD = 14;
-  const BOX = QR_SIZE + QR_PAD * 2;
   const qrBoxX = (W - BOX) / 2;
-  const qrBoxY = divY + 32;
+  const qrBoxY = 56;
 
-  /* White QR container */
+  /* White rounded QR container */
   ctx.fillStyle = "#ffffff";
-  roundRect(ctx, qrBoxX, qrBoxY, BOX, BOX, 12);
+  roundRect(ctx, qrBoxX, qrBoxY, BOX, BOX, 16);
   ctx.fill();
+
+  /* Subtle shadow under QR box */
+  ctx.save();
+  ctx.shadowColor = "rgba(51,109,247,0.18)";
+  ctx.shadowBlur = 40;
+  ctx.fillStyle = "rgba(51,109,247,0.04)";
+  roundRect(ctx, qrBoxX, qrBoxY, BOX, BOX, 16);
+  ctx.fill();
+  ctx.restore();
 
   ctx.drawImage(qrImg, qrBoxX + QR_PAD, qrBoxY + QR_PAD, QR_SIZE, QR_SIZE);
 
-  /* ── Caption ─────────────────────────────────────────── */
-  const capY = qrBoxY + BOX + 28;
-  ctx.fillStyle = MUTED;
-  ctx.font = `400 11px "Courier New", monospace`;
+  /* ── Amount — bold, prominent, below QR ─────────────── */
+  const amtY   = qrBoxY + BOX + 52;
+  const PAD    = 48;
+  const amtSz  = fitText(
+    ctx,
+    amountFormatted,
+    W - PAD * 2,
+    56,
+    (sz) => `700 ${sz}px Georgia, "Times New Roman", serif`,
+    28,
+  );
+  ctx.fillStyle = INK;
+  ctx.font = `700 ${amtSz}px Georgia, "Times New Roman", serif`;
   ctx.textAlign = "center";
-  ctx.fillText("SCAN TO PAY VIA UPI", W / 2, capY);
+  ctx.fillText(amountFormatted, W / 2, amtY);
 
+  /* ── Requester name — understated label above amount ── */
+  const displayName = name.trim() || "Payment Request";
+  ctx.fillStyle = INK_SOFT;
+  ctx.font = `400 15px -apple-system, system-ui, sans-serif`;
+  ctx.textAlign = "center";
+  ctx.fillText(displayName, W / 2, amtY + 26);
+
+  /* ── Note — tiny muted line if present ───────────────── */
+  if (note.trim()) {
+    ctx.fillStyle = MUTED;
+    ctx.font = `400 12px "Courier New", ui-monospace, monospace`;
+    ctx.textAlign = "center";
+    ctx.fillText(`for ${note.trim()}`, W / 2, amtY + 48);
+  }
+
+  /* ── Scan hint — mono label ──────────────────────────── */
+  const hintY = amtY + (note.trim() ? 72 : 62);
   ctx.fillStyle = FAINT;
-  ctx.font = `400 11px system-ui, sans-serif`;
-  ctx.fillText(`to ${payeeVpa}`, W / 2, capY + 20);
+  ctx.font = `500 11px "Courier New", ui-monospace, monospace`;
+  ctx.textAlign = "center";
+  ctx.fillText("SCAN WITH ANY UPI APP", W / 2, hintY);
 
-  /* ── Bottom surface ──────────────────────────────────── */
+  /* ── Footer surface ──────────────────────────────────── */
+  const footerH = 52;
+  const footerY = H - footerH;
+
+  /* Footer bg */
   ctx.fillStyle = SURFACE;
-  ctx.fillRect(0, H - 52, W, 52);
+  ctx.fillRect(0, footerY, W, footerH);
 
-  ctx.strokeStyle = BORDER;
+  /* Footer hairline */
+  ctx.strokeStyle = "rgba(255,255,255,0.06)";
   ctx.lineWidth = 1;
-  line(ctx, 0, H - 52, W, H - 52);
+  ctx.beginPath();
+  ctx.moveTo(0, footerY);
+  ctx.lineTo(W, footerY);
+  ctx.stroke();
 
-  ctx.fillStyle = BRAND;
-  ctx.font = `600 13px system-ui, sans-serif`;
+  /* Brand wordmark: "split" in brand blue, "UPI" in ink-soft */
   ctx.textAlign = "center";
-  ctx.fillText("splitupi", W / 2, H - 27);
+  ctx.font = `600 14px Georgia, "Times New Roman", serif`;
+  const splitLabel = "split";
+  const upiLabel   = "UPI";
+  const labelTotalW =
+    (() => { ctx.font = `600 14px Georgia, serif`; return ctx.measureText(splitLabel + upiLabel).width; })();
+  const startX = W / 2 - labelTotalW / 2;
 
+  ctx.font = `600 14px Georgia, "Times New Roman", serif`;
+  ctx.fillStyle = BRAND;
+  ctx.textAlign = "left";
+  ctx.fillText(splitLabel, startX, footerY + 22);
+  const splitLabelW = ctx.measureText(splitLabel).width;
+  ctx.fillStyle = INK_SOFT;
+  ctx.fillText(upiLabel, startX + splitLabelW, footerY + 22);
+
+  /* Tagline */
   ctx.fillStyle = FAINT;
-  ctx.font = `400 10px system-ui, sans-serif`;
-  ctx.fillText("split bills · share UPI links", W / 2, H - 12);
+  ctx.font = `400 10px "Courier New", ui-monospace, monospace`;
+  ctx.textAlign = "center";
+  ctx.fillText("split bills · share UPI links", W / 2, footerY + 38);
 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
