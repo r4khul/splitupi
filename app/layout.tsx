@@ -33,15 +33,31 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "splitupi — split bills, paid in seconds",
+  metadataBase: new URL("https://splitupi.com"),
+  title: "splitupi - split bills, paid in seconds",
   description:
     "Create a split, add a few numbers, and everyone gets a one-tap UPI payment link over SMS or WhatsApp. No app, no signup.",
   keywords: ["UPI", "split bills", "payments", "India", "expense splitting"],
   openGraph: {
-    title: "splitupi — split bills, paid in seconds",
+    title: "splitupi - split bills, paid in seconds",
     description:
       "Create a split, add a few numbers, and everyone pays you instantly over UPI.",
     type: "website",
+    images: [
+      {
+        url: "/og",
+        width: 1200,
+        height: 630,
+        alt: "splitupi - split bills, paid in seconds",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "splitupi - split bills, paid in seconds",
+    description:
+      "Create a split, add a few numbers, and everyone pays you instantly over UPI.",
+    images: ["/og"],
   },
 };
 

@@ -15,7 +15,8 @@
     "qrcode": "^1.5.4",
     "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "takumi-js": "^1.8.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.0",
