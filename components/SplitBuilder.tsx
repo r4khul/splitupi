@@ -46,12 +46,6 @@ function emptyParticipant(): Participant {
   return { id: newId(), name: "", phone: "", amount: 0 };
 }
 
-const FEATURES = [
-  { icon: ShieldCheck, label: "No app, no signup" },
-  { icon: Zap, label: "One-tap UPI pay" },
-  { icon: BadgeIndianRupee, label: "Exact paise split" },
-  { icon: Sparkles, label: "Free forever" },
-];
 
 export function SplitBuilder() {
   const [step, setStep] = useState<"build" | "share">("build");
@@ -259,12 +253,6 @@ export function SplitBuilder() {
                   AC
                 </button>
               </div>
-              <p className="mt-2.5 font-mono text-[10.5px] leading-relaxed text-faint">
-                tip: type a calculation like{" "}
-                <span className="text-muted">1200/4</span> or{" "}
-                <span className="text-muted">500+250+100</span> — it solves
-                instantly.
-              </p>
             </div>
 
             <input
@@ -450,19 +438,6 @@ export function SplitBuilder() {
                     )} left.`}
               </p>
             )}
-
-            {/* Feature pills */}
-            <div className="mt-6 flex flex-wrap gap-1.5">
-              {FEATURES.map((f) => (
-                <span
-                  key={f.label}
-                  className="pill inline-flex items-center gap-1.5 rounded-[7px] px-2.5 py-1.5 font-mono text-[11px] text-ink-soft"
-                >
-                  <f.icon className="h-3.5 w-3.5 text-brand-bright" />
-                  {f.label}
-                </span>
-              ))}
-            </div>
 
             {/* CTA */}
             <button

@@ -14,8 +14,8 @@ export function AppShell() {
   const [view, setView] = useState<View>("landing");
 
   return (
-    <main className="relative h-dvh overflow-hidden bg-aurora">
-      <div className="pointer-events-none absolute inset-0 grid-overlay" />
+    <main className={`relative h-dvh overflow-hidden ${view === "landing" ? "bg-aurora" : ""}`}>
+      <div className="pointer-events-none absolute inset-0 noise-overlay" />
 
       <AnimatePresence mode="wait" initial={false}>
         {view === "landing" ? (

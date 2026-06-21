@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Fraunces, JetBrains_Mono, Instrument_Sans } from "next/font/google";
+import { Inter, Fraunces, JetBrains_Mono, Instrument_Serif } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -16,10 +16,10 @@ const fraunces = Fraunces({
   display: "swap",
 });
 
-// Clean modern humanist sans — the hero/brand display font.
-const instrumentSans = Instrument_Sans({
+// Elegant display serif — the hero/brand display font.
+const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["400"],
   variable: "--font-instrument",
   display: "swap",
 });
@@ -59,7 +59,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${fraunces.variable} ${instrumentSans.variable} ${jetbrainsMono.variable} antialiased`}
+      className={`${inter.variable} ${fraunces.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} antialiased`}
     >
       <body>{children}</body>
     </html>

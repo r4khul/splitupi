@@ -44,13 +44,13 @@ body {
 }
 
 /*
-  Instrument Sans — brand/hero display font.
+  Instrument Serif — brand/hero display font.
   Use for the hero headline, logo wordmark, and key CTAs.
-  Bold + tight tracking is the signature treatment.
+  Variable serif styling.
 */
 .font-instrument {
-  font-family: var(--font-instrument), "Helvetica Neue", sans-serif;
-  letter-spacing: -0.03em;
+  font-family: var(--font-instrument), Georgia, serif;
+  letter-spacing: -0.01em;
 }
 
 /*
@@ -84,13 +84,36 @@ body {
     radial-gradient(48rem 30rem at 50% -16%, rgba(51, 109, 247, 0.1), transparent 62%);
 }
 
-/* Fine hairline grid, masked to fade out. */
-.grid-overlay {
-  background-image:
-    linear-gradient(to right, rgba(255, 255, 255, 0.018) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
-  background-size: 64px 64px;
-  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, black 20%, transparent 80%);
+/* Fine-grained modern noise overlay */
+.noise-overlay {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='2.0' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.15;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  z-index: 50;
+}
+
+/* Cool architectural vertical guides for the body center */
+.body-guides {
+  position: relative;
+}
+.body-guides::before,
+.body-guides::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 50%, transparent 50%);
+  background-size: 1px 6px;
+  z-index: -1;
+  pointer-events: none;
+}
+.body-guides::before {
+  left: 0;
+}
+.body-guides::after {
+  right: 0;
 }
 
 /* Flat hairline card — no glass, no heavy shadow. */
